@@ -128,21 +128,33 @@ bool PktDef::CheckCRC(char* input, int size) {
 }
 
 char* PktDef::GenPacket() {
+    // Ensure header.length is valid
+    if (header.length < HEADERSIZE + 1) {
+        // At minimum, packet must be HEADER(5) + CRC(1)
+        header.length = HEADERSIZE + 1;
+    }
+
     if (rawBuffer) delete[] rawBuffer;
 
     rawBuffer = new char[header.length];
-    memcpy(rawBuffer, &header.pktCount, 2);
-    rawBuffer[2] = header.flags;
-    memcpy(rawBuffer + 3, &header.length, 2);
 
+    // 1. Write Header
+    memcpy(rawBuffer, &header.pktCount, 2);   // Bytes 0-1
+    rawBuffer[2] = header.flags;              // Byte 2
+    memcpy(rawBuffer + 3, &header.length, 2); // Bytes 3-4
+
+    // 2. Write Body
     int bodyLength = header.length - HEADERSIZE - 1;
-    if (bodyLength > 0 && data) {
+    if (bodyLength > 0 && data != nullptr) {
         memcpy(rawBuffer + 5, data, bodyLength);
     }
 
+    // 3. Write CRC
     rawBuffer[header.length - 1] = crc;
+
     return rawBuffer;
 }
+
 
 PktDef::~PktDef() {
     if (data) delete[] data;
