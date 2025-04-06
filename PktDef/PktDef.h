@@ -38,7 +38,7 @@ private:
     char* rawBuffer;
 
 public:
-    // Default constructor – initializes an empty packet
+    // Default constructor ?initializes an empty packet
     PktDef();
 
     
