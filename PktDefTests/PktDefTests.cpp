@@ -10,8 +10,7 @@ namespace PktDefTests
     {
     public:
 
-        // ---------- Constructor Tests ----------
-
+        // Checks if default constructor sets all fields to a safe, empty state.
         TEST_METHOD(Test01_Default_InitializesToSafeState)
         {
             // Arrange & Act
@@ -24,6 +23,7 @@ namespace PktDefTests
             Assert::IsFalse(pkt.GetAck());
         }
 
+        // Parses a raw buffer and ensures all fields like count, length, and flags are correct.
         TEST_METHOD(Test02_RawBuffer_ParsesCorrectly)
         {
             // Arrange
@@ -39,8 +39,7 @@ namespace PktDefTests
             Assert::IsTrue(pkt.GetCmd() == CmdType::DRIVE);
         }
 
-        // ---------- Setter and Getter Tests ----------
-
+        // Confirms that SetPktCount correctly stores the provided packet count.
         TEST_METHOD(Test03_SetPktCount_ValidValue)
         {
             // Arrange
@@ -53,6 +52,7 @@ namespace PktDefTests
             Assert::AreEqual(256, pkt.GetPktCount());
         }
 
+        // Ensures the DRIVE command flag is properly applied.
         TEST_METHOD(Test04_SetCmd_Drive_SetsDriveFlagOnly)
         {
             // Arrange
@@ -65,6 +65,7 @@ namespace PktDefTests
             Assert::IsTrue(pkt.GetCmd() == CmdType::DRIVE);
         }
 
+        // Ensures the SLEEP command flag is properly applied.
         TEST_METHOD(Test05_SetCmd_Sleep_SetsSleepFlagOnly)
         {
             // Arrange
@@ -77,6 +78,7 @@ namespace PktDefTests
             Assert::IsTrue(pkt.GetCmd() == CmdType::SLEEP);
         }
 
+        // Ensures the RESPONSE command flag is properly applied.
         TEST_METHOD(Test06_SetCmd_Response_SetsStatusFlagOnly)
         {
             // Arrange
@@ -89,6 +91,7 @@ namespace PktDefTests
             Assert::IsTrue(pkt.GetCmd() == CmdType::RESPONSE);
         }
 
+        // Ensures the DRIVE command flag is properly applied.
         TEST_METHOD(Test07_GetCmd_ReturnsCorrectCommandType)
         {
             // Arrange
@@ -102,6 +105,7 @@ namespace PktDefTests
             Assert::AreEqual((int)CmdType::RESPONSE, (int)cmd);
         }
 
+        // Copies 3-byte body data and checks if internal data matches.
         TEST_METHOD(Test08_SetBodyData_CorrectSizeAndData_CopiesSuccessfully)
         {
             // Arrange
@@ -118,6 +122,7 @@ namespace PktDefTests
             Assert::AreEqual((int)body[2], (int)data[2]);
         }
 
+        // Ensures GetBodyData returns a non-null and valid pointer to internal data.
         TEST_METHOD(Test09_GetBodyData_ReturnsCorrectPointer)
         {
             // Arrange
@@ -133,6 +138,7 @@ namespace PktDefTests
             Assert::AreEqual(3, (int)result[0]);
         }
 
+        // Validates packet length computation after setting body content.
         TEST_METHOD(Test10_GetLength_ReturnsCorrectValue)
         {
             // Arrange
@@ -146,6 +152,7 @@ namespace PktDefTests
             Assert::AreEqual(9, pkt.GetLength());
         }
 
+        // Sets acknowledgment flag and checks if it reads back as true.
         TEST_METHOD(Test11_GetAck_ReturnsTrue_WhenAckIsSet)
         {
             // Arrange
@@ -158,8 +165,7 @@ namespace PktDefTests
             Assert::IsTrue(pkt.GetAck());
         }
 
-        // ---------- CRC Validation Tests ----------
-
+        // CRC check passes when generated correctly using internal packet state.
         TEST_METHOD(Test12_CheckCRC_CorrectCRC_ReturnsTrue)
         {
             // Arrange
@@ -177,7 +183,8 @@ namespace PktDefTests
             // Assert
             Assert::IsTrue(isValid);
         }
-
+ 
+        // Alters the CRC byte to simulate corruption and expects a CRC failure.
         TEST_METHOD(Test13_CheckCRC_IncorrectCRC_ReturnsFalse)
         {
             // Arrange
@@ -197,6 +204,7 @@ namespace PktDefTests
             Assert::IsFalse(result);
         }
 
+        // Computes CRC and ensures it matches the expected hardcoded value.
         TEST_METHOD(Test14_CalcCRC_ComputesCorrectCRC)
         {
             // Arrange
@@ -217,8 +225,7 @@ namespace PktDefTests
             Assert::IsTrue(result);
         }
 
-        // ---------- Packet Generation Tests ----------
-
+        // Makes sure GenPacket returns a valid pointer (non-null).
         TEST_METHOD(Test15_GenPacket_ReturnsNonNull)
         {
             // Arrange
@@ -236,6 +243,7 @@ namespace PktDefTests
             Assert::IsNotNull(buffer);
         }
 
+        // Serializes a packet and checks specific byte values like count and flags.
         TEST_METHOD(Test16_GenPacket_ProducesCorrectSerializedPacket)
         {
             // Arrange
@@ -254,8 +262,7 @@ namespace PktDefTests
             Assert::AreEqual((uint8_t)0x09, (uint8_t)raw[2]); // Flags = DRIVE + ACK
         }
 
-        // ---------- Edge / Negative Tests ----------
-
+        // Tries to set multiple command flags and ensures only the last one applies.
         TEST_METHOD(Test17_SetCmd_InvalidCombination_ThrowsOrIgnores)
         {
             // Arrange
@@ -270,6 +277,7 @@ namespace PktDefTests
             Assert::IsTrue(current == CmdType::SLEEP); // Only last should stay
         }
 
+        // Supplies zero-length body and confirms stability and correct packet size.
         TEST_METHOD(Test18_SetBodyData_ZeroLength_DoesNotCrash)
         {
             // Arrange
@@ -283,6 +291,7 @@ namespace PktDefTests
             Assert::AreEqual(6, pkt.GetLength()); // HEADER(5) + CRC(1)
         }
 
+        // Uses a raw packet with a faulty CRC and confirms validation fails.
         TEST_METHOD(Test19_Ctor_RawBufferWithBadCRC_SetsSafeState)
         {
             // Arrange
@@ -296,8 +305,7 @@ namespace PktDefTests
             Assert::IsFalse(result);
         }
 
-        // ---------- Optional: Telemetry Packet Test ----------
-
+        // Parses a telemetry-formatted body and checks all telemetry fields.
         TEST_METHOD(Test20_TelemetryPacket_ParsesTelemetryCorrectly)
         {
             // Arrange
@@ -323,6 +331,35 @@ namespace PktDefTests
             Assert::AreEqual(3, (int)t.lastCmd);
             Assert::AreEqual(10, (int)t.lastCmdValue);
             Assert::AreEqual(90, (int)t.lastCmdSpeed);
+        }
+
+        // Verifies that setting Ack to false clears the flag correctly.
+        TEST_METHOD(Test21_SetAckFalse_ReturnsFalse)
+        {
+            // Arrange
+            PktDef pkt;
+            pkt.SetAck(true);   // Set true first
+            pkt.SetAck(false);  // Then unset
+
+            // Assert
+            Assert::IsFalse(pkt.GetAck());
+        }
+
+        // Attempts to parse an incomplete telemetry buffer and expects safe fallback.
+        TEST_METHOD(Test22_TelemetryPacket_TooShortBody_HandledGracefully)
+        {
+            // Arrange
+            PktDef pkt;
+            char invalidData[6] = { 0x2A, 0x00, 0x64, 0x00, 0x01, 0x00 }; // Only 6 bytes
+
+            pkt.SetBodyData(invalidData, 6);
+
+            // Act
+            Telemetry t = pkt.ParseTelemetry();
+
+            // Assert: Values should be zero or default
+            Assert::AreEqual(0, (int)t.lastCmd);
+            Assert::AreEqual(0, (int)t.lastCmdSpeed);
         }
     };
 }
