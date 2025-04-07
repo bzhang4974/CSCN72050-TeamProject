@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "CppUnitTest.h"
 #include "../PktDef/PktDef.h"
 
@@ -361,5 +361,41 @@ namespace PktDefTests
             Assert::AreEqual(0, (int)t.lastCmd);
             Assert::AreEqual(0, (int)t.lastCmdSpeed);
         }
+
+        // Ensures SetDriveBody correctly handles max input values.
+        TEST_METHOD(Test23_SetDriveBody_HandlesMaxValues)
+        {
+            PktDef pkt;
+            pkt.SetDriveBody(LEFT, 255, 100);
+            DriveBody body = pkt.GetDriveBody();
+
+            Assert::AreEqual(LEFT, (int)body.direction);
+            Assert::AreEqual(255, (int)body.duration);
+            Assert::AreEqual(100, (int)body.speed);
+        }
+
+        // Confirms all valid CmdTypes are set and retrieved accurately.
+        TEST_METHOD(Test24_SetCmd_AllCommandTypesCovered)
+        {
+            PktDef pkt;
+
+            pkt.SetCmd(CmdType::DRIVE);
+            Assert::AreEqual((int)CmdType::DRIVE, (int)pkt.GetCmd());
+
+            pkt.SetCmd(CmdType::SLEEP);
+            Assert::AreEqual((int)CmdType::SLEEP, (int)pkt.GetCmd());
+
+            pkt.SetCmd(CmdType::RESPONSE);
+            Assert::AreEqual((int)CmdType::RESPONSE, (int)pkt.GetCmd());
+        }
+
+        //  Confirms GetPktCount returns the correct value after setting.
+        TEST_METHOD(Test25_GetPktCount_ReturnsCorrectValue)
+        {
+            PktDef pkt;
+            pkt.SetPktCount(42);
+            Assert::AreEqual(42, pkt.GetPktCount());
+        }
+       
     };
 }
