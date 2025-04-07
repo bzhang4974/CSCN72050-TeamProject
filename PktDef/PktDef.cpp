@@ -1,6 +1,7 @@
 #include "PktDef.h"
 #include <cstring>
 
+// Default constructor
 PktDef::PktDef() {
     header.pktCount = 0;
     header.flags = 0;
@@ -10,6 +11,7 @@ PktDef::PktDef() {
     rawBuffer = nullptr;
 }
 
+// Constructs object from raw packet buffer
 PktDef::PktDef(char* rawData) {
     memcpy(&header.pktCount, rawData, 2);
     header.flags = rawData[2];
@@ -28,6 +30,7 @@ PktDef::PktDef(char* rawData) {
     rawBuffer = nullptr;
 }
 
+// Sets the command type using bitmask encoding
 void PktDef::SetCmd(CmdType cmd) {
     header.flags &= 0xF0; // clear lower 4 bits
     switch (cmd) {
@@ -37,17 +40,20 @@ void PktDef::SetCmd(CmdType cmd) {
     }
 }
 
+// Sets the packet count field
 void PktDef::SetPktCount(int count) {
     header.pktCount = count;
 }
 
-void PktDef::SetAck(bool val) {
-    if (val)
-        header.flags |= 0x08;
+// Sets the ACK flag
+void PktDef::SetAck(bool ack) {
+    if (ack)
+        header.flags |= 0b00001000;
     else
-        header.flags &= ~0x08;
+        header.flags &= 0b11110111;
 }
 
+// Populates body with raw data and updates length
 void PktDef::SetBodyData(char* inputData, int size) {
     if (data) delete[] data;
     data = new char[size];
@@ -55,6 +61,7 @@ void PktDef::SetBodyData(char* inputData, int size) {
     header.length = HEADERSIZE + size + 1; // +1 for CRC
 }
 
+// build Drive command body
 void PktDef::SetDriveBody(uint8_t dir, uint8_t dur, uint8_t spd) {
     if (data) delete[] data;
     data = new char[3];
@@ -64,6 +71,7 @@ void PktDef::SetDriveBody(uint8_t dir, uint8_t dur, uint8_t spd) {
     header.length = HEADERSIZE + 3 + 1;
 }
 
+// Returns current command type
 CmdType PktDef::GetCmd() {
     if (header.flags & 0b00000001) return CmdType::DRIVE;
     if (header.flags & 0b00000010) return CmdType::RESPONSE;
@@ -71,14 +79,17 @@ CmdType PktDef::GetCmd() {
     return CmdType::DRIVE; // default fallback
 }
 
+// Returns whether ACK flag is set
 bool PktDef::GetAck() {
     return (header.flags & 0b00001000) != 0;
 }
 
+// Getter functions
 int PktDef::GetPktCount() { return header.pktCount; }
 int PktDef::GetLength() { return header.length; }
 char* PktDef::GetBodyData() { return data; }
 
+// Parses DriveBody struct from 3-byte drive command payload
 DriveBody PktDef::GetDriveBody() {
     DriveBody d = { 0, 0, 0 };
     if (data && header.length >= HEADERSIZE + 3 + 1) {
@@ -89,6 +100,7 @@ DriveBody PktDef::GetDriveBody() {
     return d;
 }
 
+// Parses 9-byte Telemetry structure from packet body
 Telemetry PktDef::ParseTelemetry() {
     Telemetry t = { 0 };
     if (data && header.length >= HEADERSIZE + 9 + 1) {
@@ -101,6 +113,8 @@ Telemetry PktDef::ParseTelemetry() {
     }
     return t;
 }
+
+// Computes CRC by counting all 1-bits across the packet
 void PktDef::CalcCRC() {
     uint8_t count = 0;
     char* temp = GenPacket();
@@ -115,6 +129,7 @@ void PktDef::CalcCRC() {
     rawBuffer[header.length - 1] = crc;
 }
 
+// Verifies CRC matches computed value for given buffer
 bool PktDef::CheckCRC(char* input, int size) {
     uint8_t count = 0;
     for (int i = 0; i < size - 1; i++) {
@@ -127,23 +142,37 @@ bool PktDef::CheckCRC(char* input, int size) {
     return count == static_cast<uint8_t>(input[size - 1]);
 }
 
+// Serializes packet header + body + CRC into rawBuffer
 char* PktDef::GenPacket() {
+    // Ensure header.length is valid
+    if (header.length < HEADERSIZE + 1) {
+        // At minimum, packet must be HEADER(5) + CRC(1)
+        header.length = HEADERSIZE + 1;
+    }
+
     if (rawBuffer) delete[] rawBuffer;
 
     rawBuffer = new char[header.length];
-    memcpy(rawBuffer, &header.pktCount, 2);
-    rawBuffer[2] = header.flags;
-    memcpy(rawBuffer + 3, &header.length, 2);
 
+    // 1. Write Header
+    memcpy(rawBuffer, &header.pktCount, 2);   // Bytes 0-1
+    rawBuffer[2] = header.flags;              // Byte 2
+    memcpy(rawBuffer + 3, &header.length, 2); // Bytes 3-4
+
+    // 2. Write Body
     int bodyLength = header.length - HEADERSIZE - 1;
-    if (bodyLength > 0 && data) {
+    if (bodyLength > 0 && data != nullptr) {
         memcpy(rawBuffer + 5, data, bodyLength);
     }
 
+    // 3. Write CRC
     rawBuffer[header.length - 1] = crc;
+
     return rawBuffer;
 }
 
+
+// Destructor to free allocated memory
 PktDef::~PktDef() {
     if (data) delete[] data;
     if (rawBuffer) delete[] rawBuffer;
