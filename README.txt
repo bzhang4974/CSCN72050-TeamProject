@@ -1,4 +1,4 @@
-CSCN72050 - Milestone 1 Submission
+CSCN72050 - Milestone 1 Submission - Group 8
 Group Members: Bowen Zhang, Henil Jariwala
 Date: 04/07/2025
 
@@ -11,6 +11,6 @@ Contents:
 
 How to Run the Project:
 1. Open `CSCN72050-TeamProject.sln` in Visual Studio 2022.
-2. Right-click the `PktDefTests` project ‚Üí Select ‚ÄúSet as Startup Project‚Äù.
+2. Right-click the `PktDefTests` project °˙ Select °∞Set as Startup Project°±.
 3. Build the solution.
 4. Run all tests.
