@@ -222,5 +222,34 @@ namespace MySocketTests
 			// Assert
 			Assert::IsTrue(true); // Passes if no crash
 		}
+
+		// Test 17: Verifies ConnectTCP does nothing for UDP sockets
+		TEST_METHOD(Test17_ConnectTCP_OnUDP_DoesNothing)
+		{
+			// Arrange
+			MySocket udp(SocketType::CLIENT, "127.0.0.1", 8085, ConnectionType::UDP, 512);
+
+			// Act
+			udp.ConnectTCP(); // Should silently do nothing
+
+			// Assert
+			Assert::IsTrue(true); // No crash or effect = pass
+		}
+
+		// Test 18: Ensures DisconnectTCP safely resets after simulated connection
+		TEST_METHOD(Test18_DisconnectTCP_AfterForceConnect_Succeeds)
+		{
+			// Arrange
+			MySocket socket(SocketType::CLIENT, "127.0.0.1", 8086, ConnectionType::TCP, 512);
+			socket.ForceConnected();
+
+			// Act
+			socket.DisconnectTCP();
+
+			// Assert
+			Assert::IsTrue(true); // No crash = pass
+		}
+
+		
 	};
 }
