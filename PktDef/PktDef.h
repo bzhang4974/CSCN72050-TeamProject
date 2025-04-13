@@ -73,6 +73,8 @@ public:
     // Returns a pointer to the packet body data
     char* GetBodyData();
 
+    uint8_t GetCRC() const;
+
     // Returns the parsed DriveBody struct (3-byte drive command)
     DriveBody GetDriveBody();
 
