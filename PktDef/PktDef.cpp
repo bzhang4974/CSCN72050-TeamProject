@@ -15,7 +15,7 @@ PktDef::PktDef() {
 PktDef::PktDef(char* rawData) {
     memcpy(&header.pktCount, rawData, 2);
     header.flags = rawData[2];
-    memcpy(&header.length, rawData + 3, 2);
+    header.length = rawData[3];
 
     int bodyLength = header.length - HEADERSIZE - 1;
     if (bodyLength > 0) {
@@ -117,17 +117,34 @@ Telemetry PktDef::ParseTelemetry() {
 // Computes CRC by counting all 1-bits across the packet
 void PktDef::CalcCRC() {
     uint8_t count = 0;
-    char* temp = GenPacket();
-    for (int i = 0; i < header.length - 1; i++) {
-        uint8_t b = temp[i];
+
+    // 1. º∆À„ Header
+    uint8_t tempHeader[HEADERSIZE];
+    memcpy(tempHeader, &header.pktCount, 2);
+    tempHeader[2] = header.flags;
+    tempHeader[3] = header.length;
+
+    for (int i = 0; i < HEADERSIZE; ++i) {
+        uint8_t b = tempHeader[i];
         while (b) {
             count += b & 1;
             b >>= 1;
         }
     }
+
+    // 2. º∆À„ Body
+    int bodyLength = header.length - HEADERSIZE - 1;
+    for (int i = 0; i < bodyLength; ++i) {
+        uint8_t b = data[i];
+        while (b) {
+            count += b & 1;
+            b >>= 1;
+        }
+    }
+
     crc = count;
-    rawBuffer[header.length - 1] = crc;
 }
+
 
 // Verifies CRC matches computed value for given buffer
 bool PktDef::CheckCRC(char* input, int size) {
@@ -144,32 +161,22 @@ bool PktDef::CheckCRC(char* input, int size) {
 
 // Serializes packet header + body + CRC into rawBuffer
 char* PktDef::GenPacket() {
-    // Ensure header.length is valid
-    if (header.length < HEADERSIZE + 1) {
-        // At minimum, packet must be HEADER(5) + CRC(1)
-        header.length = HEADERSIZE + 1;
-    }
-
     if (rawBuffer) delete[] rawBuffer;
-
     rawBuffer = new char[header.length];
 
-    // 1. Write Header
-    memcpy(rawBuffer, &header.pktCount, 2);   // Bytes 0-1
-    rawBuffer[2] = header.flags;              // Byte 2
-    memcpy(rawBuffer + 3, &header.length, 2); // Bytes 3-4
+    memcpy(rawBuffer, &header.pktCount, 2);
+    rawBuffer[2] = header.flags;
+    rawBuffer[3] = header.length;
 
-    // 2. Write Body
     int bodyLength = header.length - HEADERSIZE - 1;
-    if (bodyLength > 0 && data != nullptr) {
-        memcpy(rawBuffer + 5, data, bodyLength);
+    if (bodyLength > 0 && data) {
+        memcpy(rawBuffer + 4, data, bodyLength);
     }
 
-    // 3. Write CRC
     rawBuffer[header.length - 1] = crc;
-
     return rawBuffer;
 }
+
 
 
 // Destructor to free allocated memory

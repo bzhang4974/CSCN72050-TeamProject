@@ -7,7 +7,7 @@ const int FORWARD = 1;
 const int BACKWARD = 2;
 const int RIGHT = 3;
 const int LEFT = 4;
-const int HEADERSIZE = 5; // PktCount(2) + Flags(1) + Length(2)
+const int HEADERSIZE = 4; // PktCount(2) + Flags(1) + Length(1)
 
 struct DriveBody {
     uint8_t direction;
@@ -29,7 +29,7 @@ private:
     struct Header {
         uint16_t pktCount;
         uint8_t flags;
-        uint16_t length;
+        uint8_t length;
     };
 
     Header header;
