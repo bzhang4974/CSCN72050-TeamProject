@@ -90,7 +90,7 @@ void MySocket::ForceConnected() {
     bTCPConnect = true;
 }
 
-// TCP connect/disconnect placeholders (not used for UDP)
+// TCP connect/disconnect (not used for UDP)
 void MySocket::ConnectTCP() {
     if (connectionType != ConnectionType::TCP || mySocket != SocketType::CLIENT)
         return;
