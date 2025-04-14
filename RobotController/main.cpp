@@ -1,5 +1,5 @@
-#include "PktDef.h"
-#include "MySocket.h"
+#include "../PktDef/PktDef.h"
+#include "../MySocket/MySocket.h"
 #include <iostream>
 #include <thread>
 
@@ -16,7 +16,7 @@ int main() {
     packet.SetPktCount(1);                  // Packet ID
 
     // Drive parameters: FORWARD, 5 seconds, speed 90
-    packet.SetDriveBody(FORWARD, 5, 90);
+    packet.SetDriveBody(FORWARD, 5, 80);
     packet.CalcCRC();                         // 
     char* buffer = packet.GenPacket();        // 
     int len = packet.GetLength();

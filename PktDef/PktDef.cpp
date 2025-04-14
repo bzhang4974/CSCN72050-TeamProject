@@ -159,6 +159,10 @@ bool PktDef::CheckCRC(char* input, int size) {
     return count == static_cast<uint8_t>(input[size - 1]);
 }
 
+uint8_t PktDef::GetCRC() const {
+    return crc;
+}
+
 // Serializes packet header + body + CRC into rawBuffer
 char* PktDef::GenPacket() {
     if (rawBuffer) delete[] rawBuffer;

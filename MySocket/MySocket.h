@@ -42,6 +42,8 @@ public:
     void SetPort(int);
     int GetPort();
 
+    void ForceConnected();// for unit testing only
+
     SocketType GetType();
     void SetType(SocketType);
 };
