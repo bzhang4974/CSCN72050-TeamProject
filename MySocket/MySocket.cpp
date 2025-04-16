@@ -86,11 +86,29 @@ void MySocket::SetType(SocketType t) {
     if (!bTCPConnect) mySocket = t;
 }
 
-// TCP connect/disconnect placeholders (not used for UDP)
+void MySocket::ForceConnected() {
+    bTCPConnect = true;
+}
+
+// TCP connect/disconnect (not used for UDP)
 void MySocket::ConnectTCP() {
-    // not used in current UDP implementation
+    if (connectionType != ConnectionType::TCP || mySocket != SocketType::CLIENT)
+        return;
+
+    if (connect(ConnectionSocket, (sockaddr*)&SvrAddr, sizeof(SvrAddr)) == SOCKET_ERROR) {
+        std::cerr << "Connection failed: " << WSAGetLastError() << std::endl;
+        return;
+    }
+
+    std::cout << "Connected successfully.\n";
+    bTCPConnect = true;
 }
 
 void MySocket::DisconnectTCP() {
-    // not used in current UDP implementation
+    if (connectionType == ConnectionType::TCP && bTCPConnect) {
+        shutdown(ConnectionSocket, SD_BOTH);
+        closesocket(ConnectionSocket);
+        ConnectionSocket = INVALID_SOCKET;
+        bTCPConnect = false;
+    }
 }

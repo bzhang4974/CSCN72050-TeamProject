@@ -118,7 +118,7 @@ Telemetry PktDef::ParseTelemetry() {
 void PktDef::CalcCRC() {
     uint8_t count = 0;
 
-    // 1. º∆À„ Header
+    // 1. Calculate Header
     uint8_t tempHeader[HEADERSIZE];
     memcpy(tempHeader, &header.pktCount, 2);
     tempHeader[2] = header.flags;
@@ -132,7 +132,7 @@ void PktDef::CalcCRC() {
         }
     }
 
-    // 2. º∆À„ Body
+    // 2. Calculate Body
     int bodyLength = header.length - HEADERSIZE - 1;
     for (int i = 0; i < bodyLength; ++i) {
         uint8_t b = data[i];
@@ -157,6 +157,10 @@ bool PktDef::CheckCRC(char* input, int size) {
         }
     }
     return count == static_cast<uint8_t>(input[size - 1]);
+}
+
+uint8_t PktDef::GetCRC() const {
+    return crc;
 }
 
 // Serializes packet header + body + CRC into rawBuffer

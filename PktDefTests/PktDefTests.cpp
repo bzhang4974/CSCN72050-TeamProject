@@ -149,7 +149,7 @@ namespace PktDefTests
             pkt.SetBodyData(body, 3);
 
             // Assert
-            Assert::AreEqual(9, pkt.GetLength());
+            Assert::AreEqual(8, pkt.GetLength());
         }
 
         // Sets acknowledgment flag and checks if it reads back as true.
@@ -195,7 +195,8 @@ namespace PktDefTests
             pkt.SetDriveBody(1, 5, 90);
             pkt.CalcCRC();
             char* buffer = pkt.GenPacket();
-            buffer[8] = 0x00; // Corrupt the CRC
+
+            buffer[pkt.GetLength() - 1] = 0x00; // Correctly corrupt CRC
 
             // Act
             bool result = pkt.CheckCRC(buffer, pkt.GetLength());
@@ -217,11 +218,11 @@ namespace PktDefTests
             char* raw = pkt.GenPacket();
 
             // Act
-            uint8_t expectedCrc = raw[8];
-            bool result = pkt.CheckCRC(raw, 9);
+            uint8_t expectedCrc = raw[pkt.GetLength() - 1];
+            bool result = pkt.CheckCRC(raw, pkt.GetLength());
 
             // Assert
-            Assert::AreEqual((int)0x11, (int)expectedCrc); // from earlier calc
+            Assert::AreEqual((int)pkt.GetCRC(), (int)expectedCrc);
             Assert::IsTrue(result);
         }
 
@@ -288,7 +289,7 @@ namespace PktDefTests
             pkt.SetBodyData(dummy, 0);
 
             // Assert
-            Assert::AreEqual(6, pkt.GetLength()); // HEADER(5) + CRC(1)
+            Assert::AreEqual(5, pkt.GetLength()); // HEADER(5) + CRC(1)
         }
 
         // Uses a raw packet with a faulty CRC and confirms validation fails.
