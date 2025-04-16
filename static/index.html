@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Control Panel</title>
+    <script>
+        async function connectToRobot() {
+            const ip = document.getElementById("ip").value;
+            const port = document.getElementById("port").value;
+
+            const response = await fetch("/connect", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ip: ip, port: parseInt(port) })
+            });
+
+            const msg = await response.text();
+            alert(msg);
+        }
+
+        async function sendCommand(cmd, duration, angle) {
+            const response = await fetch("/telecommand/", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ command: cmd, duration: duration, angle: angle })
+            });
+
+            const result = await response.text();
+            document.getElementById("response").innerText = result;
+        }
+
+        async function requestTelemetry() {
+            const response = await fetch("/telementry_request/");
+            const result = await response.text();
+            document.getElementById("response").innerText = result;
+        }
+    </script>
+</head>
+<body>
+    <h2>Robot Control Panel</h2>
+
+    <label>Robot IP: <input type="text" id="ip" value="127.0.0.1"></label>
+    <label>Port: <input type="text" id="port" value="5000"></label>
+    <button onclick="connectToRobot()">Connect</button>
+    <br><br>
+
+    <button onclick="sendCommand('forward', 10, 0)">Drive Forward (10s)</button>
+    <button onclick="sendCommand('backward', 50, 0)">Drive Backward (50s)</button>
+    <button onclick="sendCommand('left', 2, 0)">Turn Left (2s)</button>
+    <button onclick="sendCommand('right', 90, 0)">Turn Right (90s)</button>
+    <button onclick="sendCommand('sleep', 0, 0)">Sleep</button>
+    <button onclick="requestTelemetry()">Get Telemetry</button>
+
+    <h3>Response:</h3>
+    <pre id="response"></pre>
+</body>
+</html>
