@@ -92,7 +92,7 @@ int main() {
 
     // Route: Serve GUI
     CROW_ROUTE(app, "/").methods("GET"_method)([]() {
-        std::ifstream file("../static/index.html");
+        std::ifstream file("static/index.html");
         if (!file.is_open()) return crow::response(500, "index.html not found.");
         std::stringstream buf; buf << file.rdbuf();
         return crow::response(buf.str());
@@ -105,6 +105,8 @@ int main() {
 
         robotIP = body["ip"].s();
         robotPort = body["port"].i();
+
+        std::cout << "[DEBUG] Connecting to robot at " << robotIP << ":" << robotPort << std::endl;
 
         try {
             udpSocket = std::make_unique<MySocket>(SocketType::CLIENT, robotIP, robotPort, ConnectionType::UDP, 1024);
@@ -126,6 +128,8 @@ int main() {
         int duration = body["duration"].i();
         int speed = body["angle"].i(); // reuse as speed
 
+        std::cout << "[DEBUG] Sending command '" << cmd << "' to " << robotIP << ":" << robotPort << std::endl;
+
         PktDef packet;
         packet.SetAck(false);
         packet.SetPktCount(pktCounter++);
@@ -139,14 +143,14 @@ int main() {
         else if (cmd == "right")
             packet.SetDriveBody(RIGHT, duration, speed);
         else if (cmd == "sleep") {
-            packet.SetCmd(SLEEP);
+            packet.SetCmd(CmdType::SLEEP);
             packet.SetBodyData(nullptr, 0);
         }
         else {
             return crow::response(400, "Unknown command: " + cmd);
         }
 
-        if (cmd != "sleep") packet.SetCmd(DRIVE);
+        if (cmd != "sleep") packet.SetCmd(CmdType::DRIVE);
         packet.CalcCRC();
         char* buf = packet.GenPacket();
         int len = packet.GetLength();
@@ -158,11 +162,15 @@ int main() {
         char recvBuf[1024] = {};
         int bytes = udpSocket->GetData(recvBuf);
         if (bytes > 0) {
+            std::cout << "[DEBUG] Received response of " << bytes << " bytes from robot." << std::endl;
             PktDef response(recvBuf);
             bool valid = response.CheckCRC(recvBuf, response.GetLength());
             std::string result = "ACK: " + std::string(response.GetAck() ? "Yes" : "No") +
                 ", CRC: " + (valid ? "OK" : "Fail");
             return crow::response(200, result);
+        }
+        else {
+            std::cout << "[DEBUG] No response received from robot." << std::endl;
         }
 
         return crow::response(200, "Command sent. No response.");
@@ -173,7 +181,7 @@ int main() {
         if (!udpSocket) return crow::response(400, "Not connected.");
 
         PktDef pkt;
-        pkt.SetCmd(RESPONSE);
+        pkt.SetCmd(CmdType::RESPONSE);
         pkt.SetAck(false);
         pkt.SetPktCount(pktCounter++);
         pkt.SetBodyData(nullptr, 0);
@@ -188,7 +196,7 @@ int main() {
         int bytes = udpSocket->GetData(recvBuf);
         if (bytes > 0) {
             PktDef res(recvBuf);
-            if (res.GetCmd() == RESPONSE) {
+            if (res.GetCmd() == CmdType::RESPONSE) {
                 Telemetry t = res.ParseTelemetry();
                 std::ostringstream oss;
                 oss << "LastPkt: " << t.lastPktCounter << "\n";
