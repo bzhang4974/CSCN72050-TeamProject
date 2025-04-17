@@ -1,49 +1,53 @@
 #pragma once
 #include <string>
+
+#ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
+typedef SOCKET socket_t;
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+typedef int socket_t;
+#endif
 
-// Enum for socket type
 enum class SocketType { CLIENT, SERVER };
-
-// Enum for connection type
 enum class ConnectionType { TCP, UDP };
 
 const int DEFAULT_SIZE = 1024;
 
 class MySocket {
 private:
-    char* Buffer;                   // Data buffer
-    SOCKET WelcomeSocket;          // TCP Server only
-    SOCKET ConnectionSocket;       // Main socket used
-    sockaddr_in SvrAddr;           // Server or destination address
+    char* Buffer;
+    socket_t WelcomeSocket;
+    socket_t ConnectionSocket;
+    sockaddr_in SvrAddr;
 
-    SocketType mySocket;           // CLIENT or SERVER
-    ConnectionType connectionType; // TCP or UDP
-    std::string IPAddr;            // IP Address
-    int Port;                      // Port number
-    bool bTCPConnect;              // TCP connection status
-    int MaxSize;                   // Buffer size
+    SocketType mySocket;
+    ConnectionType connectionType;
+    std::string IPAddr;
+    int Port;
+    bool bTCPConnect;
+    int MaxSize;
 
 public:
-    // Constructor & Destructor
     MySocket(SocketType, std::string, unsigned int, ConnectionType, unsigned int);
     ~MySocket();
 
-    // Communication methods
     void ConnectTCP();
     void DisconnectTCP();
-
     void SendData(const char*, int);
     int GetData(char*);
 
-    // Setters and Getters
     std::string GetIPAddr();
     void SetIPAddr(std::string);
     void SetPort(int);
     int GetPort();
 
-    void ForceConnected();// for unit testing only
-
     SocketType GetType();
     void SetType(SocketType);
+
+    // Extra for testing
+    void ForceConnect();
 };

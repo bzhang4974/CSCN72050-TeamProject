@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Robot Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+
+<body>
+    <div class="container">
+        <h1>🤖 Robot Control Panel</h1>
+
+        <div class="section">
+            <h2>🔌 Connect to Robot</h2>
+            <label>Robot IP: <input type="text" id="ip" value="127.0.0.1"></label>
+            <label>Port: <input type="text" id="port" value="5000"></label>
+            <label>
+                Protocol:
+                <select id="protocol">
+                    <option value="UDP" selected>UDP</option>
+                    <option value="TCP">TCP</option>
+                </select>
+            </label>
+            <button onclick="connectToRobot()">Connect</button>
+        </div>
+
+        <div class="section">
+            <h2>🎮 Send Drive Command</h2>
+            <form onsubmit="handleSend(event)">
+                <label>
+                    Direction:
+                    <select id="direction">
+                        <option value="forward" selected>Forward</option>
+                        <option value="backward">Backward</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </label>
+                <label>Duration (s): <input type="number" id="duration" value="5" min="1" max="100"></label>
+                <label>Speed (0–100): <input type="number" id="speed" value="80" min="0" max="100"></label>
+                <button type="submit">Send Command</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>😴 Sleep Mode</h2>
+            <p>This will shut down the robot temporarily. Use with caution!</p>
+            <button class="sleep-btn" onclick="sendSleepCommand()">Put Robot to Sleep</button>
+        </div>
+
+        <div class="section">
+            <h2>📡 Telemetry</h2>
+            <button onclick="requestTelemetry()">Get Telemetry</button>
+        </div>
+
+        <div class="section response">
+            <h2>📝 Response:</h2>
+            <pre id="response"></pre>
+        </div>
+    </div>
+</body>
+</html>

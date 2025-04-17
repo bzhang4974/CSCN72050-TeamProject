@@ -1,0 +1,12 @@
+.vs
+*.exe
+*.log
+*.zip
+*.7z
+*.tar
+*.gz
+*.rar
+*.dll
+*.obj
+build
+CMakeFiles
