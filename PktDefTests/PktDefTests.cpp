@@ -309,18 +309,18 @@ namespace PktDefTests
         // Parses a telemetry-formatted body and checks all telemetry fields.
         TEST_METHOD(Test20_TelemetryPacket_ParsesTelemetryCorrectly)
         {
-            // Arrange
-            char data[9] = {
-                0x2A, 0x00, // LastPktCounter = 42
-                0x64, 0x00, // CurrentGrade = 100
-                0x01, 0x00, // HitCount = 1
-                0x03,       // LastCmd = RIGHT
-                0x0A,       // LastCmdValue = 10
-                0x5A        // LastCmdSpeed = 90
+            // Arrange (7 bytes total, big-endian for PacketCounter)
+            char data[7] = {
+                0x00, 0x2A,  // LastPktCounter = 42 (big-endian)
+                0x64,        // CurrentGrade = 100
+                0x01,        // HitCount = 1
+                0x03,        // LastCmd = RIGHT
+                0x0A,        // LastCmdValue = 10
+                0x5A         // LastCmdSpeed = 90
             };
 
             PktDef pkt;
-            pkt.SetBodyData(data, 9);
+            pkt.SetBodyData(data, sizeof(data));  // pass length = 7
 
             // Act
             Telemetry t = pkt.ParseTelemetry();
@@ -333,6 +333,7 @@ namespace PktDefTests
             Assert::AreEqual(10, (int)t.lastCmdValue);
             Assert::AreEqual(90, (int)t.lastCmdSpeed);
         }
+
 
         // Verifies that setting Ack to false clears the flag correctly.
         TEST_METHOD(Test21_SetAckFalse_ReturnsFalse)
