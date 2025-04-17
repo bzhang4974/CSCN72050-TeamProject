@@ -1,24 +1,36 @@
-CSCN72050 - Milestone 2 Submission  
-Group Members: Bowen Zhang, Henil Jariwala  
-Date: 04/13/2025  
+# CSCN72050 - Milestone 3 Submission  
+**Group Members**: Bowen Zhang, Henil Jariwala  
+**Date**: 04/17/2025  
 
 Contents:
 
-    CSCN72050-TeamProject.sln
+CSCN72050-TeamProject.sln
     PktDef/           (Header file, source file, static library project)
     PktDefTests/      (Unit test project using Microsoft CppUnitTest)
     MySocket/         (Header and source files for UDP/TCP socket abstraction)
-    RobotController/  (Main application that sends DRIVE packets to Robot Simulator)
+    RobotController/  (Crow-based web server serving GUI and command handling)
+    static/           (Frontend files: index.html, style.css, script.js)
+    Dockerfile        (For optional Linux container deployment)
     .gitignore
     README.txt
 
 How to Run the Project:
 
-1. Open `CSCN72050-TeamProject.sln` in Visual Studio 2022.
-2. Right-click the `RobotController` project → Select “Set as Startup Project”.
-3. Build the solution.
-4. Run `Robot__Simulator.exe` (ensure it uses the default UDP port 5000).
-5. Run the RobotController project to send a DRIVE command.
+1. Build the image:
+    ```bash
+    docker build -t robot_webserver .
+2. Run the container:
+    ```bash
+    docker run -p 18080:18080 robot_webserver
+3. Open your browser and visit `http://localhost:18080`.
+4. In the GUI:
+   - Enter the Robot IP (e.g., `127.0.0.1`) and port (e.g., `5000`)
+   - Select **UDP** or **TCP**
+   - Click **Connect**
+   - Send commands (forward, backward, left, right, sleep)
+   - Click **Get Telemetry** to receive data
+
+
 
 To Run Unit Tests:
 
