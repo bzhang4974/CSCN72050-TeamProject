@@ -1,4 +1,5 @@
 #include "PktDef.h"
+#include <iostream>
 #include <cstring>
 
 // Default constructor
@@ -11,7 +12,7 @@ PktDef::PktDef() {
     rawBuffer = nullptr;
 }
 
-// Constructs object from raw packet buffer
+// Constructs object from raw packet bufferr
 PktDef::PktDef(char* rawData) {
     memcpy(&header.pktCount, rawData, 2);
     header.flags = rawData[2];
@@ -105,14 +106,23 @@ Telemetry PktDef::ParseTelemetry() {
     Telemetry t = { 0 };
 
     int bodyLength = header.length - HEADERSIZE - 1;
-    if (!data || bodyLength < 6) return t;
+    if (!data || bodyLength < 7) return t;
 
-    t.lastPktCounter = static_cast<uint8_t>(data[0]);
-    t.currentGrade = static_cast<uint8_t>(data[1]);
-    t.hitCount = static_cast<uint8_t>(data[2]);
-    t.lastCmd = static_cast<uint8_t>(data[3]);
-    t.lastCmdValue = static_cast<uint8_t>(data[4]);
-    t.lastCmdSpeed = static_cast<uint8_t>(data[5]);
+    // Robot is likely sending big-endian
+    t.lastPktCounter = static_cast<uint16_t>((data[0] << 8) | data[1]);
+    t.currentGrade = static_cast<uint8_t>(data[2]);
+    t.hitCount = static_cast<uint8_t>(data[3]);
+    t.lastCmd = static_cast<uint8_t>(data[4]);
+    t.lastCmdValue = static_cast<uint8_t>(data[5]);
+    t.lastCmdSpeed = static_cast<uint8_t>(data[6]);
+
+    std::cout << "[Telemetry] Parsed:\n"
+        << "  Pkt: " << t.lastPktCounter
+        << ", Grade: " << (int)t.currentGrade
+        << ", Hit: " << (int)t.hitCount
+        << ", Cmd: " << (int)t.lastCmd
+        << ", Val: " << (int)t.lastCmdValue
+        << ", Spd: " << (int)t.lastCmdSpeed << std::endl;
 
     return t;
 }

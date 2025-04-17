@@ -156,7 +156,7 @@ namespace MySocketTests
 		{
 			// Arrange
 			MySocket socket(SocketType::CLIENT, "127.0.0.1", 8081, ConnectionType::TCP, 512);
-			socket.ForceConnected();
+			socket.ForceConnect();
 
 			// Act
 			socket.SetIPAddr("10.0.0.5");
@@ -170,7 +170,7 @@ namespace MySocketTests
 		{
 			// Arrange
 			MySocket socket(SocketType::CLIENT, "127.0.0.1", 8081, ConnectionType::TCP, 512);
-			socket.ForceConnected();
+			socket.ForceConnect();
 
 			// Act
 			socket.SetPort(9999);
@@ -184,7 +184,7 @@ namespace MySocketTests
 		{
 			// Arrange
 			MySocket s(SocketType::CLIENT, "127.0.0.1", 8081, ConnectionType::TCP, 512);
-			s.ForceConnected();
+			s.ForceConnect();
 
 			// Act
 			s.SetType(SocketType::SERVER);
@@ -241,7 +241,7 @@ namespace MySocketTests
 		{
 			// Arrange
 			MySocket socket(SocketType::CLIENT, "127.0.0.1", 8086, ConnectionType::TCP, 512);
-			socket.ForceConnected();
+			socket.ForceConnect();
 
 			// Act
 			socket.DisconnectTCP();

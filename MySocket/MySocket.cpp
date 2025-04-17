@@ -89,3 +89,22 @@ void MySocket::SetType(SocketType t) {
 void MySocket::ForceConnect() {
     bTCPConnect = true;
 }
+
+void MySocket::ConnectTCP() {
+    if (connectionType == ConnectionType::TCP && mySocket == SocketType::CLIENT) {
+        if (connect(ConnectionSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr)) == 0) {
+            bTCPConnect = true;
+        }
+    }
+}
+
+void MySocket::DisconnectTCP() {
+    if (connectionType == ConnectionType::TCP && bTCPConnect) {
+#ifdef _WIN32
+        closesocket(ConnectionSocket);
+#else
+        close(ConnectionSocket);
+#endif
+        bTCPConnect = false;
+    }
+}

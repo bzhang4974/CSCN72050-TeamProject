@@ -94,8 +94,28 @@ int main() {
     CROW_ROUTE(app, "/").methods("GET"_method)([]() {
         std::ifstream file("static/index.html");
         if (!file.is_open()) return crow::response(500, "index.html not found.");
-        std::stringstream buf; buf << file.rdbuf();
-        return crow::response(buf.str());
+        std::stringstream buf;
+        buf << file.rdbuf();
+        auto res = crow::response(buf.str());
+        res.set_header("Content-Type", "text/html");
+        return res;
+        });
+
+    CROW_ROUTE(app, "/<string>").methods("GET"_method)
+        ([](const crow::request&, std::string filename) {
+        std::ifstream file("static/" + filename);
+        if (!file.is_open()) return crow::response(404);
+
+        std::stringstream buf;
+        buf << file.rdbuf();
+
+        crow::response res(buf.str());
+        if (filename.find(".css") != std::string::npos)
+            res.set_header("Content-Type", "text/css");
+        else if (filename.find(".js") != std::string::npos)
+            res.set_header("Content-Type", "application/javascript");
+
+        return res;
         });
 
     // Route: Connect
@@ -134,14 +154,22 @@ int main() {
         packet.SetAck(false);
         packet.SetPktCount(pktCounter++);
 
-        if (cmd == "forward")
+        if (cmd == "forward") {
+            packet.SetCmd(CmdType::DRIVE);
             packet.SetDriveBody(FORWARD, duration, speed);
-        else if (cmd == "backward")
+        }
+        else if (cmd == "backward") {
+            packet.SetCmd(CmdType::DRIVE);
             packet.SetDriveBody(BACKWARD, duration, speed);
-        else if (cmd == "left")
+        }
+        else if (cmd == "left") {
+            packet.SetCmd(CmdType::DRIVE);
             packet.SetDriveBody(LEFT, duration, speed);
-        else if (cmd == "right")
+        }
+        else if (cmd == "right") {
+            packet.SetCmd(CmdType::DRIVE);
             packet.SetDriveBody(RIGHT, duration, speed);
+        }
         else if (cmd == "sleep") {
             packet.SetCmd(CmdType::SLEEP);
             packet.SetBodyData(nullptr, 0);
@@ -150,7 +178,6 @@ int main() {
             return crow::response(400, "Unknown command: " + cmd);
         }
 
-        if (cmd != "sleep") packet.SetCmd(CmdType::DRIVE);
         packet.CalcCRC();
         char* buf = packet.GenPacket();
         int len = packet.GetLength();
