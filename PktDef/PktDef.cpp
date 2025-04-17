@@ -103,14 +103,17 @@ DriveBody PktDef::GetDriveBody() {
 // Parses 9-byte Telemetry structure from packet body
 Telemetry PktDef::ParseTelemetry() {
     Telemetry t = { 0 };
-    if (data && header.length >= HEADERSIZE + 9 + 1) {
-        memcpy(&t.lastPktCounter, data, 2);
-        memcpy(&t.currentGrade, data + 2, 2);
-        memcpy(&t.hitCount, data + 4, 2);
-        t.lastCmd = static_cast<uint8_t>(data[6]);
-        t.lastCmdValue = static_cast<uint8_t>(data[7]);
-        t.lastCmdSpeed = static_cast<uint8_t>(data[8]);
-    }
+
+    int bodyLength = header.length - HEADERSIZE - 1;
+    if (!data || bodyLength < 6) return t;
+
+    t.lastPktCounter = static_cast<uint8_t>(data[0]);
+    t.currentGrade = static_cast<uint8_t>(data[1]);
+    t.hitCount = static_cast<uint8_t>(data[2]);
+    t.lastCmd = static_cast<uint8_t>(data[3]);
+    t.lastCmdValue = static_cast<uint8_t>(data[4]);
+    t.lastCmdSpeed = static_cast<uint8_t>(data[5]);
+
     return t;
 }
 
@@ -118,7 +121,7 @@ Telemetry PktDef::ParseTelemetry() {
 void PktDef::CalcCRC() {
     uint8_t count = 0;
 
-    // 1. º∆À„ Header
+    // 1. Calculate Header
     uint8_t tempHeader[HEADERSIZE];
     memcpy(tempHeader, &header.pktCount, 2);
     tempHeader[2] = header.flags;
@@ -132,7 +135,7 @@ void PktDef::CalcCRC() {
         }
     }
 
-    // 2. º∆À„ Body
+    // 2. Calculate Body
     int bodyLength = header.length - HEADERSIZE - 1;
     for (int i = 0; i < bodyLength; ++i) {
         uint8_t b = data[i];
