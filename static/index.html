@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
+
 <!-- Toast Notification -->
 <div id="toast" class="toast"></div>
 
@@ -17,6 +18,13 @@
             <h2>🔌 Connect to Robot</h2>
             <label>Robot IP: <input type="text" id="ip" value="127.0.0.1"></label>
             <label>Port: <input type="text" id="port" value="5000"></label>
+            <label>
+                Protocol:
+                <select id="protocol">
+                    <option value="UDP" selected>UDP</option>
+                    <option value="TCP">TCP</option>
+                </select>
+            </label>
             <button onclick="connectToRobot()">Connect</button>
         </div>
 
@@ -55,5 +63,4 @@
         </div>
     </div>
 </body>
-
 </html>
