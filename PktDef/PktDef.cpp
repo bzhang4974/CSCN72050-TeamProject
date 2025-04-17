@@ -12,7 +12,7 @@ PktDef::PktDef() {
     rawBuffer = nullptr;
 }
 
-// Constructs object from raw packet buffer
+// Constructs object from raw packet bufferr
 PktDef::PktDef(char* rawData) {
     memcpy(&header.pktCount, rawData, 2);
     header.flags = rawData[2];
